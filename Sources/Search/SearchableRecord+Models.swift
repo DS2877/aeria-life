@@ -80,6 +80,14 @@ extension Moment: SearchableRecord {
     var searchEntityType: LifeEntityType { .moment }
 }
 
+extension DecisionRecord: SearchableRecord {
+    var searchID: String { id.uuidString }
+    var searchTitle: String { title }
+    var searchSubtitle: String? { "\(options.count) option\(options.count == 1 ? "" : "s")" }
+    var searchBody: String { notes }
+    var searchEntityType: LifeEntityType { .decision }
+}
+
 extension NoteItem: SearchableRecord {
     var searchID: String { id.uuidString }
     var searchTitle: String { String(rawText.prefix(60)) }

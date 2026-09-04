@@ -24,6 +24,8 @@ Sources/App/Aeria.entitlements
 Sources/Widgets/Info.plist
 Sources/Widgets/AeriaWidgets.entitlements
 Sources/Watch/Info.plist
+Sources/ShareExtension/Info.plist
+Sources/ShareExtension/AeriaShare.entitlements
 
 # ─── Secrets (never commit API keys) ────────────────────────────────────
 Secrets.xcconfig

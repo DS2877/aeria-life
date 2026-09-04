@@ -1,34 +1,17 @@
 # Roadmap
 
 Phasing follows the master build prompt §§ 81–84. Status reflects this
-repository after the second build pass (Widgets, Watch, App Intents, full
-Life-section UI, smart scheduling, voice capture, background notifications).
+repository after the third build pass (Share Extension, Live Activities,
+Decision Engine, Life Simulator — on top of Widgets, Watch, App Intents,
+full Life-section UI, smart scheduling, voice capture, and background
+notifications from the two passes before it).
 
-## MVP (§ 81)
+## MVP (§ 81) — complete
 
-| Feature | Status |
-|---|---|
-| Today | ✅ Built — greeting, schedule, Worth Knowing, Aeria observation card (now includes "leave by" travel time when it's imminent) |
-| Calendar integration | ✅ Built — EventKit, read + create |
-| Reminders integration | ✅ Built — EventKit, read + create + complete |
-| Life Inbox | ✅ Built — capture bar (text or voice) + filing (Task / Promise / Dismiss) |
-| Ask Aeria | ✅ Built — rule-based provider, structured responses, action previews, also reachable via Siri/Shortcuts |
-| Memory | ✅ Built — `MemoryFact`, `MemoryStore`, "What Aeria Knows" |
-| Vault | ✅ Built — scan (VisionKit), OCR extraction, category browsing, Assets |
-| Universal Search | ✅ Built — on-device semantic search (`NLEmbedding`) |
-| Insights | ✅ Built — via Priority Engine + Loose Ends |
-| Notifications | ✅ Built — `BackgroundRefreshScheduler` (BGTaskScheduler) runs Loose Ends periodically and fires a local notification only when `InterruptionBudget` clears it |
-| Apple-native design | ✅ Built — shared design system with Aeria+ |
-| Cloud sync | 🟡 Deliberately deferred — local-only SwiftData; see `PersistenceController.swift` for the CloudKit turn-on steps |
-| Privacy Center | ✅ Built |
-| Life Brief | ✅ Built — `LifeBriefGenerator` |
-| Check my life / Loose Ends | ✅ Built — `LooseEndsScanner` |
-| Context-aware prioritization | ✅ Built — `PriorityEngine`, `LifeModeEngine` |
-| Smart scheduling | ✅ Built — `CalendarContextProvider.freeIntervals` ("find me a free evening") + `TravelTimeProvider` (real MapKit "leave by X") |
-| Document extraction | ✅ Built — Vision OCR + heuristic fields, confidence-gated |
-| Purchase/warranty memory | ✅ Built — `Asset` model + full Assets browsing screen |
+Every item in this section is built. See git history / `docs/ARCHITECTURE.md`
+for detail on each.
 
-## V1.1 (§ 82)
+## V1.1 (§ 82) — complete
 
 | Feature | Status |
 |---|---|
@@ -38,23 +21,21 @@ Life-section UI, smart scheduling, voice capture, background notifications).
 | Widgets | ✅ Built — one adaptive widget, small/medium/large |
 | Apple Watch app | ✅ Built — read-only "what's next," delivered via WatchConnectivity |
 | Shortcuts / App Intents | ✅ Built — Check My Life, Ask Aeria, Add Task, Remember |
-| Share Sheet extension | ❌ Not built |
-| Live Activities (travel countdown) | ❌ Not built |
+| Share Sheet extension | ✅ Built — text/link/image/PDF, queued via `PendingCapture`, drained into Life Inbox; a captured attachment can be filed straight into Vault |
+| Live Activities (travel countdown) | ✅ Built — piggybacks on the Widget extension; least-verified piece of this pass, see `Sources/LiveActivity/TravelActivityAttributes.swift` |
 
-## V2 (§ 83) — not started
+## V2 (§ 83)
 
-- Advanced Life Graph exploration UI (the graph itself is live and used by
-  Moments' task/document linking — see docs/ARCHITECTURE.md)
-- Predictions (§ 28)
-- Decision Engine (§ 27)
-- Life Simulator (§ 26)
-- Shared household / family permissions
-- Natural-language-authored automations (`Routine` model exists as
-  descriptive context only — see its doc comment)
-- Promises are now a first-class screen (§ 72, built this pass) — what's
-  still missing is automatic *extraction* of a promise from free text; today
-  a `Commitment` has to be created directly (via Life Inbox filing) rather
-  than parsed out of a sentence
+| Feature | Status |
+|---|---|
+| Decision Engine (§ 27) | ✅ Built — `DecisionEngine` + `DecisionRecord`, cost comparison with a "too close to call" bar |
+| Life Simulator (§ 26) | ✅ Built — `LifeSimulator`, savings-goal and recurring-cost-change projections, always labeled "Projected" |
+| Advanced Life Graph exploration UI | 🟡 Partial — the graph is live and used by Moments' task/document linking, but there's no general-purpose graph browser |
+| Predictions (§ 28) | ❌ Not built |
+| Shared household / family permissions | ❌ Not built |
+| Natural-language-authored automations | ❌ Not built — `Routine` exists only as descriptive context, doesn't execute anything |
+| Promise extraction from free text | ❌ Not built — Promises (§ 72) is a real screen now, but a `Commitment` still has to be created directly (Life Inbox filing) rather than parsed out of a sentence like "I'll call you Tuesday" |
+| Deeper email/message intelligence (§ 77) | ❌ Not built, and not buildable as originally described — see docs/ARCHITECTURE.md § Share Extension for why passive inbox/message scanning isn't something any third-party iOS app can do, and what Aeria builds instead |
 
 ## V3 (§ 84) — not started
 

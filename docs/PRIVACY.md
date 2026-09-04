@@ -17,6 +17,12 @@ summary (next few events, top insights, a count) that the main app
 publishes — the widget via a local App Group (never leaves the device), the
 watch via Apple's WatchConnectivity (device-to-device only, no server).
 
+The Share Extension also can't reach your data directly — when you share
+something into Aeria, it's held in the same local App Group until the app
+is next opened, at which point it becomes an ordinary Life Inbox item. Aeria
+never reads your Mail or Messages on its own; the only way anything from
+those apps reaches Aeria is you explicitly using their Share button.
+
 ## What's processed, and where
 
 - **Document scanning** (Vault): OCR runs on-device via Apple's `Vision`

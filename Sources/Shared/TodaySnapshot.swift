@@ -68,4 +68,14 @@ enum SharedStorage {
         }
         return snapshot
     }
+
+    /// The on-disk App Group container — used only for file-based handoff
+    /// (see `PendingCaptureQueue`), never as the SwiftData store's location.
+    /// Aeria deliberately keeps the real database in the main app's private
+    /// sandbox (see PersistenceController's header comment); the Share
+    /// Extension can't reach that directly, so it drops captures here for
+    /// the main app to import instead of writing to SwiftData itself.
+    static var containerURL: URL? {
+        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID)
+    }
 }

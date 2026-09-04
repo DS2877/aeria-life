@@ -48,6 +48,7 @@ enum PersistenceController {
         Routine.self,
         MemoryFact.self,
         LifeRelationship.self,
+        DecisionRecord.self,
     ])
 
     /// The real, on-disk container the app runs against.

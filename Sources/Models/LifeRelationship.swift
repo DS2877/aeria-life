@@ -13,6 +13,7 @@ enum LifeEntityType: String, Codable, CaseIterable, Hashable {
     case goal, habit
     case moment, note, routine
     case memoryFact
+    case decision
 }
 
 /// The verbs that connect two Life Graph nodes — master prompt § 4. Kept as

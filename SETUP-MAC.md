@@ -122,9 +122,9 @@ Reminders) works fine there — for Vault scanning, use a real iPhone (step 7).
 3. You'll need a free **Apple ID** signed into Xcode: **Xcode → Settings →
    Accounts → +**.
 4. Click the project name (**AeriaLife**) in the left sidebar. Aeria has
-   three targets now — **Aeria**, **AeriaWidgetsExtension**, and
-   **AeriaWatch** — pick your name under **Team** on **Signing &
-   Capabilities** for all three (Xcode usually offers to do this
+   four targets now — **Aeria**, **AeriaWidgetsExtension**, **AeriaWatch**,
+   and **AeriaShareExtension** — pick your name under **Team** on
+   **Signing & Capabilities** for all four (Xcode usually offers to do this
    automatically the first time it hits a signing error; let it).
 5. On your iPhone, trust your Mac if it asks. Press **▶** in Xcode.
 6. First launch: on the iPhone, go to **Settings → General → VPN & Device
@@ -150,6 +150,20 @@ Simulator as the device, and press ▶. The watch app only shows something
 once the phone app has run at least once and sent it data — a fresh watch
 Simulator pairing starts empty, which is expected.
 
+**Share Extension**: needs a real iPhone, not the Simulator, to see it in
+other apps' share sheets reliably. Open Safari (or Photos, or Notes) on the
+device, tap Share, scroll the app row to **More**, and turn on **Aeria**.
+Share something, review what Aeria captured, tap **Save to Inbox** — it'll
+appear in the app's Life tab next time you open it (or immediately if it's
+already open in the background).
+
+**Live Activity**: this one's harder to trigger deliberately since it needs
+a real upcoming calendar event with a resolvable address, a real location
+fix, and to be within 90 minutes of the computed "leave by" time. Easiest
+way to see it once: create a calendar event 30–60 minutes from now with a
+real street address in the location field, make sure Location permission is
+granted, and open Today.
+
 ---
 
 ## Troubleshooting
@@ -161,7 +175,8 @@ Simulator pairing starts empty, which is expected.
 | Build fails after a `git pull` | Run `xcodegen generate` again — new files were added to `project.yml`. |
 | Camera scanning doesn't open anything | You're in the Simulator — it has no camera. Use a real iPhone. |
 | A file under `Sources/Intelligence/FoundationModelsIntelligenceProvider.swift` fails to build | It's optional and not used by default — see the comment at the top of that file. Safe to delete it. |
-| Signing errors mentioning `AeriaWidgetsExtension` or `AeriaWatch` | Same fix as the main app — pick your Team on that target's **Signing & Capabilities** tab. If it complains about an App Group (`group.com.aeria.life`), open **Aeria** target → **Signing & Capabilities** → **App Groups**, and let Xcode create it (or check the box next to it if it's already listed but unchecked). |
+| Signing errors mentioning `AeriaWidgetsExtension`, `AeriaWatch`, or `AeriaShareExtension` | Same fix as the main app — pick your Team on that target's **Signing & Capabilities** tab. If it complains about an App Group (`group.com.aeria.life`), open **Aeria** target → **Signing & Capabilities** → **App Groups**, and let Xcode create it (or check the box next to it if it's already listed but unchecked). |
+| Aeria doesn't show up in another app's Share sheet | Make sure you toggled it on under **More** in that app's share sheet (iOS hides new share extensions there until enabled once) — and that you're on a real device, not the Simulator. |
 | Widget shows nothing / "Open Aeria on your iPhone to sync" forever | Open the main Aeria app at least once first — the widget/watch only ever show what the phone last published. |
 | A background task never seems to fire | This is expected during normal testing — iOS decides when background refresh actually runs, and the Simulator rarely does it at all. See docs/ARCHITECTURE.md § Proactive notifications for the LLDB command that forces one. |
 | `mic`/voice capture button does nothing | Check **Settings → Privacy & Security → Speech Recognition** and **Microphone** on the device — if you tapped "Don't Allow" once, you'll need to flip it there rather than being asked again. |

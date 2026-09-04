@@ -11,6 +11,7 @@ import WidgetKit
 struct AeriaWidgetsBundle: WidgetBundle {
     var body: some Widget {
         AeriaTodayWidget()
+        TravelLiveActivityWidget()
     }
 }
 

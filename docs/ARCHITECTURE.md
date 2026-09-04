@@ -32,16 +32,21 @@ consistent everywhere it's asked.
                       Privacy, Onboarding, Settings
    Navigation/       RootTabView (the four-tab shell)
    App/              AeriaApp entry point, AppEnvironment (DI container), App Intents
-   Shared/           TodaySnapshot — the only code shared with Widgets/Watch
+   Shared/           TodaySnapshot, PendingCapture — shared with Widgets/Watch/Share
    Widgets/          AeriaWidgetsExtension target (WidgetKit)
+   LiveActivity/     Shared between Aeria and AeriaWidgetsExtension (ActivityKit)
    Watch/            AeriaWatch target (watchOS)
+   ShareExtension/   AeriaShareExtension target
 ```
 
-`Shared/`, and a handful of `DesignSystem` token files, are the *only*
-sources compiled into more than one target — see `project.yml`'s per-target
-`sources` lists for exactly which files go where, and the comment on the
-`Aeria` target explaining why `Widgets/` and `Watch/` are explicitly
-excluded from its own source list (each has its own `@main`).
+`Shared/`, `LiveActivity/`, and a handful of `DesignSystem` token files are
+the *only* sources compiled into more than one target — see `project.yml`'s
+per-target `sources` lists for exactly which files go where, and the
+comment on the `Aeria` target explaining why `Widgets/`, `Watch/`, and
+`ShareExtension/` are explicitly excluded from its own source list (the
+first two have their own `@main`; all three belong to exactly one
+extension). `LiveActivity/` isn't in `Sources/Shared` because ActivityKit
+isn't available on watchOS, which also compiles `Sources/Shared`.
 
 Every feature view takes its dependencies from `AppEnvironment`
 (`@EnvironmentObject`) and its own SwiftData `@Query`s — there's no service
@@ -155,6 +160,27 @@ testable (see `Tests/AeriaTests`).
 
 ---
 
+## Decision Engine & Life Simulator
+
+Two more pure-function additions alongside `PriorityEngine`:
+
+- **`DecisionEngine`** (master prompt § 27 "Help me decide"): compares
+  `DecisionOption`s (upfront + monthly cost, pros/cons — stored as a
+  `Codable` array on the persisted `DecisionRecord`, since options only
+  ever make sense in the context of one decision) and recommends the
+  cheaper one over a user-set horizon, *unless* the gap is under 5%, in
+  which case it says so explicitly ("too close to call") rather than
+  implying false confidence.
+- **`LifeSimulator`** (master prompt § 26): "what if I save X/month"
+  and "what if I add/remove this recurring cost" projections. Everything
+  it returns is labeled "Projected" in the UI (`LifeSimulatorView`) —
+  master prompt § 26 requires distinguishing known from projected, and
+  this is never persisted, since a "what if" is meant to be re-run, not
+  kept as a record (unlike a `DecisionRecord`, which is a real comparison
+  worth revisiting).
+
+---
+
 ## Vault & document extraction
 
 Document binaries (scanned images) live in `Application Support/Vault/` via
@@ -206,6 +232,48 @@ Both new targets needed the `Aeria` target's own `- path: Sources` entry to
 explicitly `exclude` `Widgets/**` and `Watch/**` — each has its own `@main`,
 and without the exclusion the app target would try to compile three entry
 points into one module. See the comment in `project.yml`.
+
+**Live Activities** (master prompt § 41) piggyback on the same `Widgets`
+extension — that's how ActivityKit works, a Live Activity is declared as a
+`Widget` (`TravelLiveActivityWidget`) inside the same `WidgetBundle` as the
+home-screen widget. `TravelActivityCoordinator` (main app only) starts,
+updates, and ends the activity using the exact same `TravelPlan` and
+90-minute imminence window Today's Aeria card already uses
+(`TodayView.aeriaObservation`) — a Live Activity never shows something the
+app itself wasn't already about to lead with. This was the single piece of
+this pass with the least certainty behind it (ActivityKit's API shifted
+between iOS 16.1 and 16.2); see the comment atop
+`Sources/LiveActivity/TravelActivityAttributes.swift` for the isolation
+story if it doesn't build.
+
+---
+
+## Share Extension
+
+`AeriaShareExtension` (master prompt § 76) accepts text, a link, an image,
+or a PDF from any app's share sheet. This is also the practical answer to
+§ 77 "email/message intelligence": **no third-party iOS app can passively
+read your Mail or Messages** — Apple doesn't expose that API to anyone, for
+privacy reasons that apply across the whole platform, not just Aeria.
+Sharing a message or email *into* Aeria yourself is the version of that
+idea that's actually buildable, and it's what this extension is for.
+
+Like the Widget, the extension never touches the main app's SwiftData store
+directly — it runs in its own sandboxed process and can't reach it. Instead
+it drops a `PendingCapture` (text + optional attachment file) into the App
+Group's shared container (`Sources/Shared/PendingCapture.swift`), which
+`PendingCaptureImporter` drains into a real `NoteItem` the next time the
+main app launches or comes to the foreground (`AeriaApp`'s `.task` and
+`scenePhase` handling). From there it's an ordinary Life Inbox item — Life
+already lets you file a captured item as a Task or Promise; sharing adds a
+"Vault" filing option when the capture carries an attachment, turning it
+into a `DocumentRecord` (§ 76's own example: "This looks like a warranty
+document... Save to Vault?").
+
+`NSItemProvider.loadItem` is used via its completion-handler form, wrapped
+in a continuation, rather than a newer async overload — the same
+risk-reduction call made throughout this codebase wherever an exact,
+unverifiable API surface was in question.
 
 ---
 
@@ -278,9 +346,10 @@ future settings toggle can offer light mode without touching Info.plist.
 
 ## What's not built
 
-Share Sheet extension and Live Activities (both § 82) aren't built. Predictions,
-the Decision Engine, the Life Simulator, shared/household permissions, and
-natural-language automations (all § 83) aren't built — `Routine` exists only
-as descriptive context an automation engine could read later, not something
-that executes anything yet. The Agent (§ 84) isn't built. See
-[`ROADMAP.md`](ROADMAP.md) for the full status table.
+Predictions, shared/household permissions, and natural-language automations
+(§ 83) aren't built — `Routine` exists only as descriptive context an
+automation engine could read later, not something that executes anything
+yet. Deeper email/message intelligence (§ 77) isn't built *and can't be* on
+iOS as a passive background feature — see § Share Extension above for why,
+and for the buildable version of that idea. The Agent (§ 84) isn't built.
+See [`ROADMAP.md`](ROADMAP.md) for the full status table.

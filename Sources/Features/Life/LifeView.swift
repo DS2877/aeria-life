@@ -110,6 +110,8 @@ struct LifeView: View {
         LifeSection(id: "moments", title: "Moments", symbolName: "sparkles"),
         LifeSection(id: "people", title: "People", symbolName: "person"),
         LifeSection(id: "places", title: "Places", symbolName: "mappin.circle"),
+        LifeSection(id: "decisions", title: "Decisions", symbolName: "arrow.left.arrow.right"),
+        LifeSection(id: "simulator", title: "What If", symbolName: "wand.and.stars"),
     ]
 
     private var lifeSectionsGrid: some View {
@@ -145,6 +147,8 @@ struct LifeView: View {
         case "moments": MomentsListView()
         case "people": PeopleListView()
         case "places": PlacesListView()
+        case "decisions": DecisionsListView()
+        case "simulator": LifeSimulatorView()
         default: EmptyView()
         }
     }
@@ -210,6 +214,18 @@ struct LifeView: View {
             modelContext.insert(commitment)
             note.resultingEntityType = .commitment
             note.resultingEntityID = commitment.id.uuidString
+        case .document:
+            let title = note.rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let document = DocumentRecord(
+                title: title.isEmpty ? "Shared Document" : String(title.prefix(60)),
+                category: .document,
+                storageFileName: note.attachmentFileName ?? "",
+                provenance: .imported
+            )
+            document.notes = note.rawText
+            modelContext.insert(document)
+            note.resultingEntityType = .document
+            note.resultingEntityID = document.id.uuidString
         case .dismiss:
             break
         }
@@ -219,7 +235,7 @@ struct LifeView: View {
 }
 
 enum InboxFileKind {
-    case task, commitment, dismiss
+    case task, commitment, document, dismiss
 }
 
 private struct InboxNoteRow: View {
@@ -231,9 +247,17 @@ private struct InboxNoteRow: View {
             Text(note.rawText)
                 .font(AeriaFont.body)
                 .foregroundStyle(Palette.textPrimary)
+            if note.sourceKind == .shareSheet {
+                Label("Shared into Aeria", systemImage: "square.and.arrow.up")
+                    .font(AeriaFont.caption)
+                    .foregroundStyle(Palette.textTertiary)
+            }
             HStack(spacing: Metrics.spacingS) {
                 filingButton("Task", systemImage: "checkmark.circle") { onFile(.task) }
                 filingButton("Promise", systemImage: "text.bubble") { onFile(.commitment) }
+                if note.attachmentFileName != nil {
+                    filingButton("Vault", systemImage: "lock.shield") { onFile(.document) }
+                }
                 filingButton("Dismiss", systemImage: "xmark") { onFile(.dismiss) }
                 Spacer()
             }

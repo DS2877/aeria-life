@@ -17,6 +17,7 @@ struct LifeSearchView: View {
     @Query private var subscriptions: [Subscription]
     @Query private var goals: [Goal]
     @Query private var moments: [Moment]
+    @Query private var decisions: [DecisionRecord]
 
     private var results: [SearchResult] {
         guard !query.trimmingCharacters(in: .whitespaces).isEmpty else { return [] }
@@ -31,6 +32,7 @@ struct LifeSearchView: View {
         all += LifeSearchIndex.search(query, in: subscriptions)
         all += LifeSearchIndex.search(query, in: goals)
         all += LifeSearchIndex.search(query, in: moments)
+        all += LifeSearchIndex.search(query, in: decisions)
         return all.sorted { $0.relevance > $1.relevance }
     }
 
@@ -86,6 +88,7 @@ struct LifeSearchView: View {
         case .subscription: return "arrow.triangle.2.circlepath"
         case .goal: return "target"
         case .moment: return "sparkles"
+        case .decision: return "arrow.left.arrow.right"
         default: return "circle"
         }
     }

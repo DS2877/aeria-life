@@ -27,10 +27,20 @@ struct AeriaApp: App {
             .appThemeBackground()
             .environmentObject(environment)
             .modelContainer(environment.modelContainer)
+            .task {
+                PendingCaptureImporter.importPending(into: environment.mainContext)
+            }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .background {
+            switch newPhase {
+            case .background:
                 BackgroundRefreshScheduler.scheduleNext()
+            case .active:
+                // Catches anything shared in while Aeria was backgrounded —
+                // launch alone only catches it on a cold start.
+                PendingCaptureImporter.importPending(into: environment.mainContext)
+            default:
+                break
             }
         }
     }

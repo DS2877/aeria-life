@@ -34,17 +34,22 @@ targets:
     sources:
       # Widgets/ has its own @main (AeriaWidgetsBundle) and Watch/ has its own
       # @main (AeriaWatchApp) — both must be excluded here or the app target
-      # ends up with three @main entry points in one module. Shared/ stays
-      # included so TodaySnapshot/SharedStorage are visible to the app too.
+      # ends up with three @main entry points in one module. ShareExtension/
+      # doesn't have its own @main but belongs only to that extension.
+      # Shared/ stays included so TodaySnapshot/SharedStorage are visible to
+      # the app too.
       - path: Sources
         excludes:
           - "Widgets/**"
           - "Watch/**"
+          - "ShareExtension/**"
       - path: Resources
     dependencies:
       - target: AeriaWidgetsExtension
         embed: true
       - target: AeriaWatch
+        embed: true
+      - target: AeriaShareExtension
         embed: true
     entitlements:
       path: Sources/App/Aeria.entitlements
@@ -55,6 +60,7 @@ targets:
       path: Sources/App/Info.plist
       properties:
         CFBundleDisplayName: Aeria
+        NSSupportsLiveActivities: true
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
@@ -87,6 +93,7 @@ targets:
     platform: iOS
     sources:
       - path: Sources/Widgets
+      - path: Sources/LiveActivity
       - path: Sources/Shared
       - path: Sources/DesignSystem/Palette.swift
       - path: Sources/DesignSystem/Typography.swift
@@ -128,6 +135,39 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aeria.life.watch
         PRODUCT_NAME: AeriaWatch
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+
+  AeriaShareExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Sources/ShareExtension
+      - path: Sources/Shared
+    entitlements:
+      path: Sources/ShareExtension/AeriaShare.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.aeria.life
+    info:
+      path: Sources/ShareExtension/Info.plist
+      properties:
+        CFBundleDisplayName: Aeria
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsText: true
+              NSExtensionActivationSupportsWebURLWithMaxCount: 1
+              NSExtensionActivationSupportsWebPageWithMaxCount: 1
+              NSExtensionActivationSupportsImageWithMaxCount: 1
+              NSExtensionActivationSupportsFileWithMaxCount: 1
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aeria.life.share
+        PRODUCT_NAME: AeriaShareExtension
+        TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
         SWIFT_EMIT_LOC_STRINGS: YES
 

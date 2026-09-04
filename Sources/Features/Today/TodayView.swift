@@ -50,6 +50,7 @@ struct TodayView: View {
 
     private func reload() async {
         await viewModel.load(environment: environment, knownPlaces: places)
+        TravelActivityCoordinator.update(with: viewModel.travelPlan)
         viewModel.publishSnapshot(
             greeting: LifeBriefGenerator.greeting(),
             looseEnds: looseEnds,
