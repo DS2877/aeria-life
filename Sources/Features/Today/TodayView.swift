@@ -50,6 +50,11 @@ struct TodayView: View {
 
     private func reload() async {
         await viewModel.load(environment: environment, knownPlaces: places)
+        viewModel.publishSnapshot(
+            greeting: LifeBriefGenerator.greeting(),
+            looseEnds: looseEnds,
+            aeriaHeadline: aeriaObservation.headline
+        )
     }
 
     private var looseEnds: [LooseEnd] {
