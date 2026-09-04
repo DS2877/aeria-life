@@ -80,6 +80,26 @@ final class CalendarContextProvider: ObservableObject {
         return gaps
     }
 
+    /// Timed (non-all-day) event count for one specific day — the building
+    /// block for "is today unusually busy" (`BusyDayPredictor`).
+    func timedEventCount(on date: Date) -> Int {
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: date)
+        let end = calendar.date(byAdding: .day, value: 1, to: start) ?? date
+        return events(from: start, to: end).filter { !$0.isAllDay }.count
+    }
+
+    /// Event counts for the same weekday over each of the past `weeksBack`
+    /// weeks — the "typical" baseline `BusyDayPredictor` compares today
+    /// against.
+    func pastSameWeekdayEventCounts(weeksBack: Int, from referenceDate: Date = .now) -> [Int] {
+        let calendar = Calendar.current
+        return (1...max(weeksBack, 1)).compactMap { weeksAgo in
+            guard let date = calendar.date(byAdding: .weekOfYear, value: -weeksAgo, to: referenceDate) else { return nil }
+            return timedEventCount(on: date)
+        }
+    }
+
     /// Creates a calendar event. Only ever called after the user has
     /// approved an Aeria action preview (master prompt § 30, § 67) — never
     /// silently.

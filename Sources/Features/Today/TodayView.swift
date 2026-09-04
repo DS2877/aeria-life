@@ -132,6 +132,16 @@ struct TodayView: View {
             return (one.title, nil)
         }
 
+        // A real comparison against your own typical pattern, not just a
+        // fixed count — master prompt § 28 "unusually busy days."
+        if let assessment = viewModel.busyDayAssessment, assessment.isUnusuallyBusy {
+            let typical = Int(assessment.typicalCount.rounded())
+            return (
+                "Today looks busier than usual.",
+                "\(assessment.todayCount) events, versus \(typical) on a typical \(weekdayName())."
+            )
+        }
+
         let remaining = viewModel.todaysEvents.filter { $0.startDate > .now }.count
         if remaining >= 3 {
             return ("You have a busy day ahead.", "\(remaining) more things on your calendar today.")
@@ -140,6 +150,12 @@ struct TodayView: View {
             return ("A couple of things are worth a look when you have a moment.", nil)
         }
         return ("Nothing important needs your attention right now.", nil)
+    }
+
+    private func weekdayName(for date: Date = .now) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
     }
 
     private func symbolName(for type: LifeEntityType) -> String {

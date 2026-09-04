@@ -12,6 +12,19 @@ struct SubscriptionListView: View {
         subscriptions.filter(\.isActive).reduce(Decimal(0)) { $0 + $1.monthlyEquivalentCost }
     }
 
+    /// Master prompt § 19: "Three subscriptions haven't appeared relevant
+    /// recently." Aeria has no way to observe actual usage of another
+    /// app, so this is a periodic self-check-in rather than an inferred
+    /// fact — still real, since `lastRelevantAt` genuinely drives it,
+    /// just honestly sourced from the user rather than pretending to be
+    /// detected.
+    private func needsCheckIn(_ subscription: Subscription) -> Bool {
+        guard subscription.isActive else { return false }
+        let staleDate = Calendar.current.date(byAdding: .day, value: -90, to: .now) ?? .now
+        let reference = subscription.lastRelevantAt ?? subscription.createdAt
+        return reference < staleDate
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Metrics.spacingL) {
@@ -61,19 +74,48 @@ struct SubscriptionListView: View {
     }
 
     private func subscriptionRow(_ subscription: Subscription) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(subscription.name)
-                    .font(AeriaFont.bodyEmphasized)
-                    .foregroundStyle(Palette.textPrimary)
-                Text("\(formatted(subscription.amount)) / \(subscription.frequency.rawValue)")
-                    .font(AeriaFont.caption)
-                    .foregroundStyle(Palette.textSecondary)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(subscription.name)
+                        .font(AeriaFont.bodyEmphasized)
+                        .foregroundStyle(subscription.isActive ? Palette.textPrimary : Palette.textTertiary)
+                        .strikethrough(!subscription.isActive)
+                    Text(subscription.isActive
+                         ? "\(formatted(subscription.amount)) / \(subscription.frequency.rawValue)"
+                         : "Canceled")
+                        .font(AeriaFont.caption)
+                        .foregroundStyle(Palette.textSecondary)
+                }
+                Spacer()
+                if subscription.isActive {
+                    Text(formatted(subscription.annualizedCost) + "/yr")
+                        .font(AeriaFont.caption)
+                        .foregroundStyle(Palette.textTertiary)
+                }
             }
-            Spacer()
-            Text(formatted(subscription.annualizedCost) + "/yr")
-                .font(AeriaFont.caption)
-                .foregroundStyle(Palette.textTertiary)
+
+            if needsCheckIn(subscription) {
+                HStack {
+                    Text("Still using this?")
+                        .font(AeriaFont.caption)
+                        .foregroundStyle(Palette.notice)
+                    Spacer()
+                    Button("Yes") {
+                        subscription.lastRelevantAt = .now
+                        subscription.updatedAt = .now
+                    }
+                    .font(AeriaFont.captionEmphasized)
+                    .buttonStyle(.bordered)
+                    Button("No, cancel it") {
+                        subscription.isActive = false
+                        subscription.updatedAt = .now
+                    }
+                    .font(AeriaFont.captionEmphasized)
+                    .buttonStyle(.bordered)
+                    .tint(Palette.critical)
+                }
+            }
         }
     }
 

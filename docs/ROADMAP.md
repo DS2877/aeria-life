@@ -34,12 +34,13 @@ for detail on each.
 | Decision Engine (§ 27) | ✅ Built — `DecisionEngine` + `DecisionRecord`, cost comparison with a "too close to call" bar |
 | Life Simulator (§ 26) | ✅ Built — `LifeSimulator`, savings-goal and recurring-cost-change projections, always labeled "Projected" |
 | Advanced Life Graph exploration UI | 🟡 Partial — the graph is live and used by Moments' task/document linking, but there's no general-purpose graph browser |
-| Predictions (§ 28) | 🟡 Partial — `SchedulingConflictScanner` detects genuine calendar-event overlaps and surfaces them on Today; "unusually busy day," "recurring expenses trending up," and similar broader predictions aren't built |
+| Predictions (§ 28) | 🟡 Partial — `SchedulingConflictScanner` detects genuine calendar-event overlaps, and `BusyDayPredictor` compares today's event count against your own typical pattern for that weekday (past 4 weeks), both surfaced on Today; "recurring expenses trending up" and similar broader predictions aren't built |
 | Shared household / family permissions | ❌ Not built — blocked on enabling CloudKit first (see docs/ARCHITECTURE.md § Persistence & sync); building this on top of a local-only store would mean rebuilding it again once sync is on |
 | Natural-language-authored automations | 🟡 Partial — a `Routine` with a daily time now schedules a real repeating notification (`RoutinesListView`, `NotificationScheduler.scheduleDaily`); a location-based trigger like "when I get home" stays descriptive-only, since executing it would need "Always" location access — a meaningfully bigger permission ask than anything else in this app |
 | Promise↔Person linking | ✅ Built — `Commitment.toPersonID` (previously set nowhere in the UI) is now wired: `PersonDetailView` shows a person's open promises, `PromisesView` can link/relink one, matching § 72's own "You said you'd send Anna the document" example |
 | Promise-phrasing detection | 🟡 Partial — `CommitmentExtractor` highlights the Life Inbox "Promise" button when a capture sounds like a commitment ("I'll…"), but never files it automatically; true extraction *from* free text into a structured `Commitment` isn't built |
 | Deeper email/message intelligence (§ 77) | ❌ Not built, and not buildable as originally described — see docs/ARCHITECTURE.md § Share Extension for why passive inbox/message scanning isn't something any third-party iOS app can do, and what Aeria builds instead |
+| Subscription relevance check-in (§ 19 "hasn't appeared relevant recently") | ✅ Built, honestly — `Subscription.lastRelevantAt` was previously set nowhere in the UI, so this could never actually trigger. Aeria has no way to observe usage of another app, so this is a periodic self-check-in ("Still using this?" in `SubscriptionListView`) rather than an inferred fact — real, just sourced from the user instead of pretending to be detected |
 
 ## V3 (§ 84) — not started
 

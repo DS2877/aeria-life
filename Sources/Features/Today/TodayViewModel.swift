@@ -8,6 +8,7 @@ final class TodayViewModel: ObservableObject {
     @Published private(set) var currentMode: LifeMode = .home
     @Published private(set) var isLoading = false
     @Published private(set) var travelPlan: TravelPlan?
+    @Published private(set) var busyDayAssessment: BusyDayPredictor.Assessment?
 
     private let travelTimeProvider = TravelTimeProvider()
 
@@ -44,6 +45,14 @@ final class TodayViewModel: ObservableObject {
         }
 
         travelPlan = await computeTravelPlan(now: now, environment: environment)
+
+        if environment.calendarProvider.isAuthorized {
+            let todayCount = todaysEvents.filter { !$0.isAllDay }.count
+            let history = environment.calendarProvider.pastSameWeekdayEventCounts(weeksBack: 4, from: now)
+            busyDayAssessment = BusyDayPredictor.assess(todayCount: todayCount, recentSameWeekdayCounts: history)
+        } else {
+            busyDayAssessment = nil
+        }
     }
 
     /// Only computed for a next event that (a) has a location string, (b)
