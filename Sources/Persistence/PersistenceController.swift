@@ -67,7 +67,14 @@ enum PersistenceController {
             // point of view. Fall back to a fresh in-memory container so the
             // app still opens; the on-disk file is left untouched for
             // inspection/recovery rather than deleted automatically.
-            assertionFailure("Falling back to an in-memory store — on-disk store failed to load: \(error)")
+            //
+            // NOTE: this used to call `assertionFailure` here, which reads
+            // like a log line but is not one — Swift's assertionFailure
+            // actually traps (crashes) in Debug builds, which is exactly
+            // the "never hard-crash" behavior this comment promises NOT to
+            // do. `print` is the correct choice: visible in the Xcode
+            // console, doesn't stop execution.
+            print("PersistenceController: falling back to an in-memory store — on-disk store failed to load: \(error)")
             let fallback = ModelConfiguration(isStoredInMemoryOnly: true)
             // swiftlint:disable:next force_try
             return try! ModelContainer(for: schema, configurations: [fallback])
