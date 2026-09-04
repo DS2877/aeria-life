@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-enum AssetCategory: String, Codable, CaseIterable {
+enum AssetCategory: String, Codable, CaseIterable, Hashable {
     case vehicle, electronics, appliance, bicycle, camera, sportsEquipment, furniture, other
 
     var displayName: String {

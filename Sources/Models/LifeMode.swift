@@ -3,7 +3,7 @@ import Foundation
 /// The user's inferred current context — master prompt § 14. Primarily
 /// inferred by `LifeModeEngine` from time/calendar/location; manual override
 /// is always allowed and never "traps" the user in a mode (§ 14).
-enum LifeMode: String, Codable, CaseIterable {
+enum LifeMode: String, Codable, CaseIterable, Hashable {
     case morning, work, home, travel, focus, weekend, evening
 
     var displayName: String {

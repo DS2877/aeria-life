@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-enum NoteSourceKind: String, Codable, CaseIterable {
+enum NoteSourceKind: String, Codable, CaseIterable, Hashable {
     case text, voice, photo, link, document, shareSheet
 }
 

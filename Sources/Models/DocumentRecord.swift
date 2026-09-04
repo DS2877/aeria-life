@@ -1,7 +1,9 @@
 import Foundation
 import SwiftData
 
-enum DocumentCategory: String, Codable, CaseIterable {
+enum DocumentCategory: String, Codable, CaseIterable, Hashable, Identifiable {
+    var id: Self { self }
+
     case document, receipt, warranty, insurance, contract
     case vehicle, home, electronics, purchase, travel, identity, other
 

@@ -78,6 +78,6 @@ final class Organization {
     }
 }
 
-enum OrganizationCategory: String, Codable, CaseIterable {
+enum OrganizationCategory: String, Codable, CaseIterable, Hashable {
     case insurer, bank, employer, retailer, utility, healthcare, government, service, other
 }

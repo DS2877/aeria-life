@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-enum MomentCategory: String, Codable, CaseIterable {
+enum MomentCategory: String, Codable, CaseIterable, Hashable {
     case trip, move, wedding, newJob, newCar, renovation, majorPurchase, holiday, project, other
 
     var displayName: String {

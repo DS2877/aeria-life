@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-enum BillingFrequency: String, Codable, CaseIterable {
+enum BillingFrequency: String, Codable, CaseIterable, Hashable {
     case weekly, monthly, quarterly, yearly
 
     /// Times per year this frequency bills, for annualizing cost.
@@ -15,7 +15,7 @@ enum BillingFrequency: String, Codable, CaseIterable {
     }
 }
 
-enum MoneyCategory: String, Codable, CaseIterable {
+enum MoneyCategory: String, Codable, CaseIterable, Hashable {
     case streaming, software, fitness, utility, housing, insurance, transport, other
 }
 

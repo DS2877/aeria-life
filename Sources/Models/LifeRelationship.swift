@@ -5,7 +5,7 @@ import SwiftData
 /// in EventKit rather than SwiftData (see docs/ARCHITECTURE.md § Life Graph
 /// for why calendar events and reminders aren't duplicated into our store).
 /// `id` values for `.event`/`.reminder` are EventKit identifiers, not UUIDs.
-enum LifeEntityType: String, Codable, CaseIterable {
+enum LifeEntityType: String, Codable, CaseIterable, Hashable {
     case person, organization, place
     case event, reminder // EventKit-backed, not persisted here
     case task, commitment
@@ -18,7 +18,7 @@ enum LifeEntityType: String, Codable, CaseIterable {
 /// The verbs that connect two Life Graph nodes — master prompt § 4. Kept as
 /// a flat vocabulary rather than per-entity typed relationships so new
 /// connections don't require a schema migration.
-enum LifeRelationshipKind: String, Codable, CaseIterable {
+enum LifeRelationshipKind: String, Codable, CaseIterable, Hashable {
     case owns, belongsTo
     case occursAt, occursOn
     case expiresOn, renewsOn

@@ -39,6 +39,6 @@ final class Place {
     }
 }
 
-enum PlaceCategory: String, Codable, CaseIterable {
+enum PlaceCategory: String, Codable, CaseIterable, Hashable {
     case home, work, family, frequent, travel, other
 }

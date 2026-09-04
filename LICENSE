@@ -1,0 +1,17 @@
+Copyright (c) 2026 Philip Klingstedt. All rights reserved.
+
+This repository is source-available for transparency and review. It is NOT
+open-source software.
+
+You may view and clone this repository. You may not copy, modify, distribute,
+sublicense, or use this code or any substantial portion of it — in source or
+compiled form — to build, publish, or distribute another application or product,
+without prior written permission from the copyright holder.
+
+The "Aeria" name and marks are not licensed.
+
+Aeria has no third-party dependencies — everything it uses is an Apple system
+framework (SwiftData, EventKit, Vision, CoreLocation, NaturalLanguage,
+WeatherKit).
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.

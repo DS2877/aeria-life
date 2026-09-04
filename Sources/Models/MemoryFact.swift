@@ -5,7 +5,7 @@ import SwiftData
 /// inference from ambient context from plain system fact. "What Aeria
 /// Knows" (PrivacyCenter) groups and explains itself by this, not by a
 /// single opaque "memory" bucket.
-enum MemoryKind: String, Codable, CaseIterable {
+enum MemoryKind: String, Codable, CaseIterable, Hashable {
     /// The user directly told Aeria to remember this ("Remember that I
     /// prefer morning flights"). Never silently overwritten by inference.
     case explicitPreference

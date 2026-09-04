@@ -4,7 +4,7 @@ import Foundation
 /// these — see master prompt § 5 Information Model, § 56 AI Source
 /// Transparency. Never collapse this into a single "source: String"; the UI
 /// (confidence badges, "What Aeria Knows") branches on the case, not the text.
-enum Provenance: String, Codable, CaseIterable {
+enum Provenance: String, Codable, CaseIterable, Hashable {
     /// The user typed, said, or confirmed this directly.
     case userProvided
     /// Read from an Apple system source the user granted access to
@@ -56,6 +56,22 @@ enum ConfidenceLevel: Comparable, Codable {
         case .confirmed, .high: return ""
         case .low: return "This appears to be "
         }
+    }
+
+    /// Swift doesn't synthesize `Comparable` for enums — this orders by
+    /// trust, least to most: `.low < .high < .confirmed`, independent of
+    /// declaration order above (which is grouped by doc-comment topic, not
+    /// rank).
+    private var trustRank: Int {
+        switch self {
+        case .low: return 0
+        case .high: return 1
+        case .confirmed: return 2
+        }
+    }
+
+    static func < (lhs: ConfidenceLevel, rhs: ConfidenceLevel) -> Bool {
+        lhs.trustRank < rhs.trustRank
     }
 }
 

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-enum GoalCategory: String, Codable, CaseIterable {
+enum GoalCategory: String, Codable, CaseIterable, Hashable {
     case health, financial, learning, travel, home, career, other
 }
 
@@ -52,7 +52,7 @@ final class Goal {
     }
 }
 
-enum HabitCadence: String, Codable, CaseIterable {
+enum HabitCadence: String, Codable, CaseIterable, Hashable {
     case daily, weekdays, weekly, custom
 }
 
