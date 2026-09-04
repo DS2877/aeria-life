@@ -1,0 +1,102 @@
+name: AeriaLife
+
+options:
+  bundleIdPrefix: com.aeria
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+  generateEmptyDirectories: true
+  xcodeVersion: "26.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    SWIFT_STRICT_CONCURRENCY: targeted
+    MARKETING_VERSION: "1.0"
+    # Fallback build number for local archives. Xcode Cloud overrides this per
+    # build via ci_scripts/ci_pre_xcodebuild.sh (CI_BUILD_NUMBER). Keep it ahead
+    # of every number already uploaded to App Store Connect.
+    CURRENT_PROJECT_VERSION: "1"
+    # Apple Developer Team ID. Copied from the Aeria+ (tvOS) project — same
+    # team. If Aeria Life ships under a different Apple Developer account,
+    # replace this (developer.apple.com → Membership). Safe to commit either
+    # way — it's embedded in every shipped app regardless.
+    DEVELOPMENT_TEAM: "4YJN2S39Q4"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  Aeria:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+    dependencies: []
+    info:
+      path: Sources/App/Info.plist
+      properties:
+        CFBundleDisplayName: Aeria
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        ITSAppUsesNonExemptEncryption: false
+        NSCalendarsFullAccessUsageDescription: "Aeria reads your calendar to build Today and find good times for things — nothing is shared off your device without your say-so."
+        NSRemindersFullAccessUsageDescription: "Aeria reads your reminders so Today and Loose Ends stay complete."
+        NSLocationWhenInUseUsageDescription: "Aeria uses your location to understand context, like travel time and local weather."
+        NSCameraUsageDescription: "Aeria uses the camera to scan receipts, warranties, and other documents into your Vault."
+        NSPhotoLibraryUsageDescription: "Aeria can import receipts and documents you've already photographed into your Vault."
+        NSFaceIDUsageDescription: "Aeria can lock your Vault and sensitive information behind Face ID."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aeria.life
+        PRODUCT_NAME: Aeria
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SWIFT_EMIT_LOC_STRINGS: YES
+
+  AeriaTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/AeriaTests
+    dependencies:
+      - target: Aeria
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.aeria.life.tests
+
+  AeriaUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/AeriaUITests
+    dependencies:
+      - target: Aeria
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.aeria.life.uitests
+        TEST_TARGET_NAME: Aeria
+
+schemes:
+  Aeria:
+    build:
+      targets:
+        Aeria: all
+        AeriaTests: [test]
+        AeriaUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - AeriaTests
+        - AeriaUITests
+    profile:
+      config: Release
+    archive:
+      config: Release
