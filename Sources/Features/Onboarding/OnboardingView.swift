@@ -73,9 +73,10 @@ struct OnboardingView: View {
     private var welcomeStep: some View {
         VStack(spacing: Metrics.spacingXL) {
             Spacer()
-            Image(systemName: "sparkle")
-                .font(.system(size: 48, weight: .light))
-                .foregroundStyle(Palette.accent)
+            Image("AeriaMark")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 96, height: 96)
             VStack(spacing: Metrics.spacingS) {
                 Text("Welcome to Aeria")
                     .font(AeriaFont.display)

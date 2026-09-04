@@ -41,6 +41,24 @@ final class NotificationScheduler {
         center.add(request)
     }
 
+    /// A real, repeating daily reminder — what backs a time-based `Routine`
+    /// (master prompt § 78). Hour/minute only in the trigger's date
+    /// components is what makes `UNCalendarNotificationTrigger` repeat
+    /// every day at that time rather than firing once.
+    func scheduleDaily(title: String, body: String, hour: Int, minute: Int, identifier: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+
+        var components = DateComponents()
+        components.hour = hour
+        components.minute = minute
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        center.add(request)
+    }
+
     func cancel(identifier: String) {
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
     }

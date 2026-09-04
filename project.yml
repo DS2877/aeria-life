@@ -44,6 +44,8 @@ targets:
           - "Watch/**"
           - "ShareExtension/**"
       - path: Resources
+        excludes:
+          - "WatchAssets.xcassets/**"
     dependencies:
       - target: AeriaWidgetsExtension
         embed: true
@@ -61,7 +63,9 @@ targets:
       properties:
         CFBundleDisplayName: Aeria
         NSSupportsLiveActivities: true
-        UILaunchScreen: {}
+        UILaunchScreen:
+          UIImageName: AeriaMark
+          UIColorName: LaunchBackground
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
         ITSAppUsesNonExemptEncryption: false
@@ -123,6 +127,7 @@ targets:
     sources:
       - path: Sources/Watch
       - path: Sources/Shared
+      - path: Resources/WatchAssets.xcassets
     info:
       path: Sources/Watch/Info.plist
       properties:
@@ -135,6 +140,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.aeria.life.watch
         PRODUCT_NAME: AeriaWatch
+        ASSETCATALOG_COMPILER_APPICON_NAME: WatchAppIcon
         GENERATE_INFOPLIST_FILE: YES
         SWIFT_EMIT_LOC_STRINGS: YES
 

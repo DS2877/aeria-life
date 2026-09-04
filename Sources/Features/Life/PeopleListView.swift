@@ -19,12 +19,16 @@ struct PeopleListView: View {
             } else {
                 List {
                     ForEach(people) { person in
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(person.name).foregroundStyle(Palette.textPrimary)
-                            if !person.relationshipLabel.isEmpty {
-                                Text(person.relationshipLabel)
-                                    .font(AeriaFont.caption)
-                                    .foregroundStyle(Palette.textSecondary)
+                        NavigationLink {
+                            PersonDetailView(person: person)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(person.name).foregroundStyle(Palette.textPrimary)
+                                if !person.relationshipLabel.isEmpty {
+                                    Text(person.relationshipLabel)
+                                        .font(AeriaFont.caption)
+                                        .foregroundStyle(Palette.textSecondary)
+                                }
                             }
                         }
                         .listRowBackground(Palette.canvas)

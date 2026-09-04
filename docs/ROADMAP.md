@@ -1,10 +1,13 @@
 # Roadmap
 
 Phasing follows the master build prompt §§ 81–84. Status reflects this
-repository after the third build pass (Share Extension, Live Activities,
-Decision Engine, Life Simulator — on top of Widgets, Watch, App Intents,
-full Life-section UI, smart scheduling, voice capture, and background
-notifications from the two passes before it).
+repository after the fourth build pass (real app icon/brand mark from
+aeriaplus.se; time-based Routine execution; Person↔Promise linking;
+scheduling-conflict detection; lightweight promise-phrasing detection in
+Life Inbox) — on top of Share Extension, Live Activities, Decision Engine,
+and Life Simulator, which were on top of Widgets, Watch, App Intents, full
+Life-section UI, smart scheduling, voice capture, and background
+notifications before that.
 
 ## MVP (§ 81) — complete
 
@@ -31,10 +34,11 @@ for detail on each.
 | Decision Engine (§ 27) | ✅ Built — `DecisionEngine` + `DecisionRecord`, cost comparison with a "too close to call" bar |
 | Life Simulator (§ 26) | ✅ Built — `LifeSimulator`, savings-goal and recurring-cost-change projections, always labeled "Projected" |
 | Advanced Life Graph exploration UI | 🟡 Partial — the graph is live and used by Moments' task/document linking, but there's no general-purpose graph browser |
-| Predictions (§ 28) | ❌ Not built |
-| Shared household / family permissions | ❌ Not built |
-| Natural-language-authored automations | ❌ Not built — `Routine` exists only as descriptive context, doesn't execute anything |
-| Promise extraction from free text | ❌ Not built — Promises (§ 72) is a real screen now, but a `Commitment` still has to be created directly (Life Inbox filing) rather than parsed out of a sentence like "I'll call you Tuesday" |
+| Predictions (§ 28) | 🟡 Partial — `SchedulingConflictScanner` detects genuine calendar-event overlaps and surfaces them on Today; "unusually busy day," "recurring expenses trending up," and similar broader predictions aren't built |
+| Shared household / family permissions | ❌ Not built — blocked on enabling CloudKit first (see docs/ARCHITECTURE.md § Persistence & sync); building this on top of a local-only store would mean rebuilding it again once sync is on |
+| Natural-language-authored automations | 🟡 Partial — a `Routine` with a daily time now schedules a real repeating notification (`RoutinesListView`, `NotificationScheduler.scheduleDaily`); a location-based trigger like "when I get home" stays descriptive-only, since executing it would need "Always" location access — a meaningfully bigger permission ask than anything else in this app |
+| Promise↔Person linking | ✅ Built — `Commitment.toPersonID` (previously set nowhere in the UI) is now wired: `PersonDetailView` shows a person's open promises, `PromisesView` can link/relink one, matching § 72's own "You said you'd send Anna the document" example |
+| Promise-phrasing detection | 🟡 Partial — `CommitmentExtractor` highlights the Life Inbox "Promise" button when a capture sounds like a commitment ("I'll…"), but never files it automatically; true extraction *from* free text into a structured `Commitment` isn't built |
 | Deeper email/message intelligence (§ 77) | ❌ Not built, and not buildable as originally described — see docs/ARCHITECTURE.md § Share Extension for why passive inbox/message scanning isn't something any third-party iOS app can do, and what Aeria builds instead |
 
 ## V3 (§ 84) — not started

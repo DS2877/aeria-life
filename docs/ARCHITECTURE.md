@@ -130,6 +130,24 @@ Life Inbox capture bar's mic button (`LifeView`) — live transcript fills the
 same text field a typed capture would, so it goes through identical review
 before being saved.
 
+`CommitmentExtractor` and `SchedulingConflictScanner` are two more narrow,
+pure-function additions. The first is a *nudge, not an auto-filer* —
+Life Inbox highlights the "Promise" filing button when a capture's phrasing
+sounds like a commitment ("I'll…", "I promise to…"), but never files it
+without a tap (master prompt § 9 asks Aeria to classify intent; it doesn't
+ask Aeria to stop asking). The second finds genuine time overlaps between
+two calendar events and surfaces them on Today with the same urgency as an
+imminent "leave by" — see `TodayView.aeriaObservation`'s ordering.
+
+`Routine` (master prompt § 78) is descriptive context by default, but when
+it carries a daily time it becomes a real, repeating local notification via
+`NotificationScheduler.scheduleDaily` — the one automation trigger this app
+executes without asking for anything beyond the notification permission it
+already needs elsewhere. A location-based trigger ("when I get home") would
+need "Always" location access for background region monitoring, a
+meaningfully bigger and more sensitive ask than anything else in this app,
+so those stay descriptive-only; see the doc comment on `Routine` itself.
+
 ---
 
 ## Intelligence
@@ -341,6 +359,19 @@ Tokens live in `Sources/DesignSystem/`:
 Aeria is dark-only by product decision (`AppThemeBackground` forces
 `.preferredColorScheme(.dark)`) rather than an `Info.plist` override, so a
 future settings toggle can offer light mode without touching Info.plist.
+
+**The app icon is the real Aeria mark** — the glass shield built from a
+connected node mesh, pulled directly from aeriaplus.se (`vpn-xOZYPzbL.jpg`,
+1200×1200) and re-rendered at 1024×1024 with the alpha channel stripped
+(Apple's App Store validation rejects icons carrying one, even fully
+opaque — `Resources/Assets.xcassets/AppIcon.appiconset`). The same source
+backs the watchOS app icon (its own catalog, `Resources/WatchAssets.xcassets`
+— kept separate from the iOS catalog rather than sharing one across
+platforms) and an in-app `AeriaMark` image, used once, deliberately, for
+the onboarding welcome screen's first impression rather than scattered
+through small inline icons — the Ask Aeria tab and entry point still use
+the plain `sparkle` SF Symbol, which is the "subtle mark" master prompt § 8
+actually asks for at that scale.
 
 ---
 

@@ -112,6 +112,7 @@ struct LifeView: View {
         LifeSection(id: "places", title: "Places", symbolName: "mappin.circle"),
         LifeSection(id: "decisions", title: "Decisions", symbolName: "arrow.left.arrow.right"),
         LifeSection(id: "simulator", title: "What If", symbolName: "wand.and.stars"),
+        LifeSection(id: "routines", title: "Routines", symbolName: "repeat.circle"),
     ]
 
     private var lifeSectionsGrid: some View {
@@ -149,6 +150,7 @@ struct LifeView: View {
         case "places": PlacesListView()
         case "decisions": DecisionsListView()
         case "simulator": LifeSimulatorView()
+        case "routines": RoutinesListView()
         default: EmptyView()
         }
     }
@@ -242,6 +244,10 @@ private struct InboxNoteRow: View {
     let note: NoteItem
     let onFile: (InboxFileKind) -> Void
 
+    private var looksLikeCommitment: Bool {
+        CommitmentExtractor.looksLikeCommitment(note.rawText)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Metrics.spacingS) {
             Text(note.rawText)
@@ -252,9 +258,14 @@ private struct InboxNoteRow: View {
                     .font(AeriaFont.caption)
                     .foregroundStyle(Palette.textTertiary)
             }
+            if looksLikeCommitment {
+                Label("Sounds like a promise", systemImage: "sparkle")
+                    .font(AeriaFont.caption)
+                    .foregroundStyle(Palette.accent)
+            }
             HStack(spacing: Metrics.spacingS) {
                 filingButton("Task", systemImage: "checkmark.circle") { onFile(.task) }
-                filingButton("Promise", systemImage: "text.bubble") { onFile(.commitment) }
+                filingButton("Promise", systemImage: "text.bubble", isHighlighted: looksLikeCommitment) { onFile(.commitment) }
                 if note.attachmentFileName != nil {
                     filingButton("Vault", systemImage: "lock.shield") { onFile(.document) }
                 }
@@ -264,12 +275,12 @@ private struct InboxNoteRow: View {
         }
     }
 
-    private func filingButton(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+    private func filingButton(_ title: String, systemImage: String, isHighlighted: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label(title, systemImage: systemImage)
                 .font(AeriaFont.caption)
         }
         .buttonStyle(.bordered)
-        .tint(Palette.textSecondary)
+        .tint(isHighlighted ? Palette.accent : Palette.textSecondary)
     }
 }

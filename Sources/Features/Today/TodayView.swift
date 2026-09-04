@@ -67,11 +67,26 @@ struct TodayView: View {
         )
     }
 
+    private var conflicts: [SchedulingConflict] {
+        SchedulingConflictScanner.findConflicts(in: viewModel.todaysEvents)
+    }
+
     private var worthKnowingItems: [WorthKnowingSection.Item] {
         var items: [WorthKnowingSection.Item] = []
 
         if let hint = LifeBriefGenerator.worthKnowingLine(weather: viewModel.weather) {
             items.append(.init(id: "weather", symbolName: "cloud.rain.fill", title: hint, detail: nil, tint: Palette.notice))
+        }
+
+        for conflict in conflicts.prefix(2) {
+            let time = conflict.overlapStart.formatted(date: .omitted, time: .shortened)
+            items.append(.init(
+                id: conflict.id,
+                symbolName: "exclamationmark.triangle.fill",
+                title: "\(conflict.firstTitle) and \(conflict.secondTitle) overlap",
+                detail: "Both around \(time)",
+                tint: Palette.critical
+            ))
         }
 
         for end in looseEnds.prefix(3) {
@@ -94,6 +109,10 @@ struct TodayView: View {
         if let plan = viewModel.travelPlan, plan.leaveByDate.timeIntervalSince(.now) < 90 * 60 {
             let time = plan.leaveByDate.formatted(date: .omitted, time: .shortened)
             return ("Leave by \(time) to arrive at \(plan.eventTitle) comfortably.", "\(plan.travelMinutes) min drive.")
+        }
+
+        if let conflict = conflicts.first {
+            return ("\(conflict.firstTitle) and \(conflict.secondTitle) are scheduled at the same time.", "You'll want to move one of them.")
         }
 
         let inputs: [PriorityInput] = looseEnds.map { end in
