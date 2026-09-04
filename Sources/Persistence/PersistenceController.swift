@@ -23,6 +23,14 @@ import SwiftData
 ///    relationship must have a default — SwiftData+CloudKit requires this.
 ///    The schema in this file already follows that rule.
 enum PersistenceController {
+    /// A single shared container reused by the SwiftUI app *and* by App
+    /// Intents (Sources/App/AppIntents) — App Intents are invoked by the
+    /// system outside the normal app lifecycle (from Shortcuts/Siri, maybe
+    /// without the app UI ever launching), so they can't reach
+    /// `AppEnvironment`. Both call sites need the same on-disk store, or a
+    /// task created via Shortcuts wouldn't show up in the app.
+    static let shared = makeContainer()
+
     static let schema = Schema([
         Person.self,
         Organization.self,

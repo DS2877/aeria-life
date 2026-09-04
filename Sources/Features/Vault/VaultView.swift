@@ -69,6 +69,23 @@ struct VaultView: View {
                 }
                 .buttonStyle(.plain)
 
+                NavigationLink {
+                    AssetsListView()
+                } label: {
+                    SurfaceCard {
+                        HStack {
+                            Image(systemName: "cube.fill")
+                                .foregroundStyle(Palette.accent)
+                            Text("Assets")
+                                .font(AeriaFont.bodyEmphasized)
+                                .foregroundStyle(Palette.textPrimary)
+                            Spacer()
+                            Image(systemName: "chevron.right").foregroundStyle(Palette.textTertiary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+
                 if documents.isEmpty {
                     EmptyStateView(
                         symbolName: "lock.shield",

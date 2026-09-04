@@ -20,7 +20,7 @@ final class AppEnvironment: ObservableObject {
     @Published var manualLifeModeOverride: LifeMode?
 
     init(
-        modelContainer: ModelContainer = PersistenceController.makeContainer(),
+        modelContainer: ModelContainer = PersistenceController.shared,
         weatherProvider: WeatherContextProviding = UnavailableWeatherProvider(),
         intelligenceProvider: AeriaIntelligenceProviding = RuleBasedIntelligenceProvider()
     ) {

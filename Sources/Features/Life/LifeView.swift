@@ -69,6 +69,8 @@ struct LifeView: View {
                 }
                 .buttonStyle(.plain)
 
+                lifeSectionsGrid
+
                 if !unsortedNotes.isEmpty {
                     VStack(alignment: .leading, spacing: Metrics.spacingM) {
                         SectionHeader(title: "Inbox")
@@ -92,6 +94,58 @@ struct LifeView: View {
             .padding(Metrics.screenPadding)
         }
         .navigationTitle("Life")
+    }
+
+    private struct LifeSection: Identifiable {
+        let id: String
+        let title: String
+        let symbolName: String
+    }
+
+    private static let sections: [LifeSection] = [
+        LifeSection(id: "promises", title: "Promises", symbolName: "text.bubble"),
+        LifeSection(id: "goals", title: "Goals", symbolName: "target"),
+        LifeSection(id: "habits", title: "Habits", symbolName: "repeat"),
+        LifeSection(id: "moments", title: "Moments", symbolName: "sparkles"),
+        LifeSection(id: "people", title: "People", symbolName: "person"),
+        LifeSection(id: "places", title: "Places", symbolName: "mappin.circle"),
+    ]
+
+    private var lifeSectionsGrid: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: Metrics.spacingM)], spacing: Metrics.spacingM) {
+            ForEach(Self.sections) { section in
+                NavigationLink {
+                    destination(for: section.id)
+                } label: {
+                    VStack(spacing: Metrics.spacingS) {
+                        Image(systemName: section.symbolName)
+                            .font(.system(size: 18))
+                            .foregroundStyle(Palette.accent)
+                        Text(section.title)
+                            .font(AeriaFont.caption)
+                            .foregroundStyle(Palette.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Metrics.spacingM)
+                    .background(Palette.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: Metrics.cardCornerRadius, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func destination(for sectionID: String) -> some View {
+        switch sectionID {
+        case "promises": PromisesView()
+        case "goals": GoalsListView()
+        case "habits": HabitsListView()
+        case "moments": MomentsListView()
+        case "people": PeopleListView()
+        case "places": PlacesListView()
+        default: EmptyView()
+        }
     }
 
     private var captureBar: some View {
