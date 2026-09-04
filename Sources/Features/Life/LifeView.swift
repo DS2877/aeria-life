@@ -8,6 +8,7 @@ import SwiftUI
 struct LifeView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var captureText: String = ""
+    @StateObject private var voiceCapture = VoiceCaptureRecorder()
 
     @Query(sort: \NoteItem.createdAt, order: .reverse) private var allNotes: [NoteItem]
     @Query(filter: #Predicate<Commitment> { !$0.isArchived }) private var commitments: [Commitment]
@@ -156,6 +157,17 @@ struct LifeView: View {
                 .padding(.vertical, Metrics.spacingS + 2)
                 .background(Palette.surface)
                 .clipShape(RoundedRectangle(cornerRadius: Metrics.controlCornerRadius, style: .continuous))
+                .disabled(voiceCapture.isRecording)
+
+            Button {
+                Task { await toggleVoiceCapture() }
+            } label: {
+                Image(systemName: voiceCapture.isRecording ? "mic.fill" : "mic")
+                    .font(.system(size: 20))
+                    .foregroundStyle(voiceCapture.isRecording ? Palette.critical : Palette.textSecondary)
+                    .frame(width: 32, height: 32)
+            }
+
             Button {
                 capture()
             } label: {
@@ -165,6 +177,18 @@ struct LifeView: View {
             }
             .disabled(captureText.trimmingCharacters(in: .whitespaces).isEmpty)
         }
+        .onChange(of: voiceCapture.transcript) { _, newValue in
+            if voiceCapture.isRecording { captureText = newValue }
+        }
+    }
+
+    private func toggleVoiceCapture() async {
+        if voiceCapture.isRecording {
+            voiceCapture.stopRecording()
+            return
+        }
+        guard await voiceCapture.requestAuthorization() else { return }
+        try? voiceCapture.startRecording()
     }
 
     private func capture() {

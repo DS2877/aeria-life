@@ -121,9 +121,11 @@ Reminders) works fine there — for Vault scanning, use a real iPhone (step 7).
 2. In Xcode, click the device selector at the top and choose your iPhone.
 3. You'll need a free **Apple ID** signed into Xcode: **Xcode → Settings →
    Accounts → +**.
-4. Click the project name (**AeriaLife**) in the left sidebar, select the
-   **Aeria** target → **Signing & Capabilities**, and pick your name under
-   **Team**.
+4. Click the project name (**AeriaLife**) in the left sidebar. Aeria has
+   three targets now — **Aeria**, **AeriaWidgetsExtension**, and
+   **AeriaWatch** — pick your name under **Team** on **Signing &
+   Capabilities** for all three (Xcode usually offers to do this
+   automatically the first time it hits a signing error; let it).
 5. On your iPhone, trust your Mac if it asks. Press **▶** in Xcode.
 6. First launch: on the iPhone, go to **Settings → General → VPN & Device
    Management** and trust your developer certificate.
@@ -132,6 +134,21 @@ Reminders) works fine there — for Vault scanning, use a real iPhone (step 7).
 > expires after 7 days and must be re-installed. A paid **Apple Developer
 > Program** membership ($99/year) removes that limit and is required for
 > TestFlight and the App Store. You don't need it yet.
+
+---
+
+## 8. Try the Widget and the Watch app
+
+**Widget**: on the iPhone Simulator (or a real iPhone), long-press the Home
+Screen, tap **+** in the top corner, search **Aeria**, and add it. It reads
+whatever Today last showed — open the app once first so it has something to
+show.
+
+**Watch app**: pick the **AeriaWatch** scheme at the top of Xcode (next to
+the ▶ button, where you normally pick "Aeria"), choose a paired Watch
+Simulator as the device, and press ▶. The watch app only shows something
+once the phone app has run at least once and sent it data — a fresh watch
+Simulator pairing starts empty, which is expected.
 
 ---
 
@@ -144,6 +161,10 @@ Reminders) works fine there — for Vault scanning, use a real iPhone (step 7).
 | Build fails after a `git pull` | Run `xcodegen generate` again — new files were added to `project.yml`. |
 | Camera scanning doesn't open anything | You're in the Simulator — it has no camera. Use a real iPhone. |
 | A file under `Sources/Intelligence/FoundationModelsIntelligenceProvider.swift` fails to build | It's optional and not used by default — see the comment at the top of that file. Safe to delete it. |
+| Signing errors mentioning `AeriaWidgetsExtension` or `AeriaWatch` | Same fix as the main app — pick your Team on that target's **Signing & Capabilities** tab. If it complains about an App Group (`group.com.aeria.life`), open **Aeria** target → **Signing & Capabilities** → **App Groups**, and let Xcode create it (or check the box next to it if it's already listed but unchecked). |
+| Widget shows nothing / "Open Aeria on your iPhone to sync" forever | Open the main Aeria app at least once first — the widget/watch only ever show what the phone last published. |
+| A background task never seems to fire | This is expected during normal testing — iOS decides when background refresh actually runs, and the Simulator rarely does it at all. See docs/ARCHITECTURE.md § Proactive notifications for the LLDB command that forces one. |
+| `mic`/voice capture button does nothing | Check **Settings → Privacy & Security → Speech Recognition** and **Microphone** on the device — if you tapped "Don't Allow" once, you'll need to flip it there rather than being asked again. |
 
 When you hit an error you don't understand, copy the **full red error text**
 from Xcode's Issue Navigator (the ⚠️ icon in the left sidebar) and send it to

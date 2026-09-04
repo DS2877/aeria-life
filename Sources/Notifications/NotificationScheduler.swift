@@ -27,6 +27,20 @@ final class NotificationScheduler {
         center.add(request)
     }
 
+    /// Fires shortly after being scheduled rather than at a specific
+    /// calendar time — what a background-refresh-triggered proactive
+    /// notification (master prompt § 29) wants, as opposed to `schedule`'s
+    /// future-calendar-date shape.
+    func scheduleNearImmediate(title: String, body: String, identifier: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        center.add(request)
+    }
+
     func cancel(identifier: String) {
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
     }

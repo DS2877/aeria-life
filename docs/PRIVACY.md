@@ -11,6 +11,12 @@ device only. There is no backend server. CloudKit sync is not enabled by
 default — see [`ARCHITECTURE.md`](ARCHITECTURE.md) § Persistence & sync for
 why, and what turning it on later requires.
 
+The Widget and Watch app do **not** get their own copy of your data or a
+direct line into the SwiftData store. Both only ever see a small daily
+summary (next few events, top insights, a count) that the main app
+publishes — the widget via a local App Group (never leaves the device), the
+watch via Apple's WatchConnectivity (device-to-device only, no server).
+
 ## What's processed, and where
 
 - **Document scanning** (Vault): OCR runs on-device via Apple's `Vision`
@@ -23,6 +29,20 @@ why, and what turning it on later requires.
 - **Search**: `NLEmbedding` sentence embeddings are computed on-device.
 - **Weather**: only requested if WeatherKit is explicitly enabled (it isn't,
   by default) — see `Context/WeatherContextProvider.swift`.
+- **Voice capture**: transcription runs on-device via `SFSpeechRecognizer`
+  when the device supports on-device recognition (`requiresOnDeviceRecognition`
+  is set whenever `supportsOnDeviceRecognition` is true). On older devices
+  that fall back to Apple's server-side recognition, that's the same
+  boundary Siri dictation everywhere else on iOS already uses — nothing
+  Aeria-specific is sent anywhere beyond that.
+- **Travel time**: computing a "leave by" time sends the destination address
+  and your current coordinates to Apple's MapKit/geocoding services (the
+  same ones Maps itself uses) — this is the one feature in Aeria that isn't
+  purely on-device, because turn-by-turn routing isn't something that can be
+  computed locally.
+- **Background refresh**: `BackgroundRefreshScheduler` re-runs Loose Ends
+  periodically using only what's already stored locally — no network call,
+  no new data fetched.
 
 ## Permissions Aeria requests, and why
 
@@ -34,6 +54,8 @@ why, and what turning it on later requires.
 | Camera | Scan documents into Vault | First scan attempt |
 | Photo Library | Import an existing photo of a document | First import attempt |
 | Face ID | Optional Vault lock | Settings, opt-in |
+| Microphone + Speech Recognition | Voice capture into Life Inbox | First tap on the mic button |
+| Contacts | Optional: link a Person to their existing contact card | Only if you tap "Link a Contact" when adding someone |
 
 Every permission is requested with an on-screen explanation immediately
 before the system prompt (`PermissionStepView`) — never a blanket ask on one

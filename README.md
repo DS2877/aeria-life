@@ -4,6 +4,12 @@ Aeria is a Life OS for iPhone — a personal intelligence layer connecting your
 time, tasks, commitments, documents, possessions, money, places, people,
 routines, and goals into one calm, native Apple experience.
 
+**iPhone**: Today, Ask Aeria, Life (Inbox, Loose Ends, Promises, Goals,
+Habits, Moments, People, Places), Vault (document scanning, Assets,
+Subscriptions), Search, Privacy Center. **Apple Watch**: a read-only
+"what's next." **Widgets**: small/medium/large. **Siri/Shortcuts**: Check
+My Life, Ask Aeria, Add Task, Remember.
+
 Full product/engineering documentation lives in [`docs/`](docs/):
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — module map, the Life Graph, data model

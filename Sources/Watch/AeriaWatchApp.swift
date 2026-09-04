@@ -8,8 +8,10 @@ struct AeriaWatchApp: App {
 
     var body: some Scene {
         WindowGroup {
-            WatchTodayView()
-                .environmentObject(connectivity)
+            NavigationStack {
+                WatchTodayView()
+            }
+            .environmentObject(connectivity)
         }
     }
 }

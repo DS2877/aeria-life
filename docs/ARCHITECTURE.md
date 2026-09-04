@@ -21,18 +21,27 @@ consistent everywhere it's asked.
  Sources/
    Models/          SwiftData @Model entities — the Life Graph nodes
    Persistence/      ModelContainer setup (local-only for now)
-   Context/          EventKit / CoreLocation / WeatherKit — live system state
+   Context/          EventKit / CoreLocation / WeatherKit / MapKit / Speech — live system state
    Intelligence/      PriorityEngine, Ask Aeria's provider, Life Brief, Loose Ends
    Memory/           MemoryFact CRUD — "What Aeria Knows"
    Vault/            Document OCR/extraction, on-disk file storage
    Search/           On-device semantic search index
-   Notifications/    Local notifications behind an interruption budget
+   Notifications/    Local notifications, interruption budget, background refresh
    DesignSystem/     Palette, type ramp, spacing/motion tokens, shared components
    Features/         One folder per screen — Today, Ask, Life, Vault, Search,
                       Privacy, Onboarding, Settings
    Navigation/       RootTabView (the four-tab shell)
-   App/              AeriaApp entry point, AppEnvironment (DI container)
+   App/              AeriaApp entry point, AppEnvironment (DI container), App Intents
+   Shared/           TodaySnapshot — the only code shared with Widgets/Watch
+   Widgets/          AeriaWidgetsExtension target (WidgetKit)
+   Watch/            AeriaWatch target (watchOS)
 ```
+
+`Shared/`, and a handful of `DesignSystem` token files, are the *only*
+sources compiled into more than one target — see `project.yml`'s per-target
+`sources` lists for exactly which files go where, and the comment on the
+`Aeria` target explaining why `Widgets/` and `Watch/` are explicitly
+excluded from its own source list (each has its own `@main`).
 
 Every feature view takes its dependencies from `AppEnvironment`
 (`@EnvironmentObject`) and its own SwiftData `@Query`s — there's no service
@@ -100,6 +109,22 @@ switch the binding in `AppEnvironment.init` to `WeatherKitProvider()`
 (`Context/WeatherContextProvider.swift`). This wasn't wired up by default so
 the very first build doesn't need any Apple Developer portal configuration.
 
+`TravelTimeProvider` (master prompt § 20, § 29 — "leave by X") geocodes the
+next event's location string with `CLGeocoder`, then asks `MKDirections` for
+a driving-time estimate, adding a fixed buffer on top. `TodayViewModel`
+only computes this for a same-day, non-all-day next event, and only shows it
+on Today once the leave-by time is within 90 minutes — see
+`TodayView.aeriaObservation`. Any failure (no location fix, ungeocodable
+address, no route) just yields `nil`; this is additive to Today, never a
+dependency of it.
+
+`VoiceCaptureRecorder` (`Context/VoiceCaptureRecorder.swift`, master prompt
+§ 75) wraps the standard `SFSpeechRecognizer` + `AVAudioEngine` tap pattern,
+requesting on-device recognition when the device supports it. Wired into the
+Life Inbox capture bar's mic button (`LifeView`) — live transcript fills the
+same text field a typed capture would, so it goes through identical review
+before being saved.
+
 ---
 
 ## Intelligence
@@ -156,6 +181,71 @@ model download. Any type can opt in by conforming to `SearchableRecord`
 
 ---
 
+## Widgets & Watch
+
+Neither surface talks to SwiftData or EventKit directly — both are pure
+renderers of a `TodaySnapshot` (`Shared/TodaySnapshot.swift`, a small
+`Codable` struct) that `TodayViewModel.publishSnapshot(...)` writes after
+every Today refresh. This keeps "what's worth showing" defined in exactly
+one place; a widget can never show something Today itself wouldn't.
+
+The two surfaces get the snapshot two different ways, deliberately:
+
+- **Widget** (`AeriaWidgetsExtension`): reads it from a shared App Group
+  (`group.com.aeria.life`) `UserDefaults` suite (`SharedStorage`). This is
+  the standard, low-risk pattern for a widget that doesn't need live
+  queries — no shared SwiftData container, no cross-process store access.
+- **Watch** (`AeriaWatch`): receives it over `WatchConnectivity`
+  (`PhoneConnectivityBridge` on the phone, `WatchConnectivityReceiver` on
+  the watch), via `updateApplicationContext` — fire-and-forget, "latest
+  wins," no reachability requirement. `WCSession` is a poor fit for an
+  extension's transient lifecycle, which is why the widget doesn't use this
+  same path.
+
+Both new targets needed the `Aeria` target's own `- path: Sources` entry to
+explicitly `exclude` `Widgets/**` and `Watch/**` — each has its own `@main`,
+and without the exclusion the app target would try to compile three entry
+points into one module. See the comment in `project.yml`.
+
+---
+
+## App Intents / Shortcuts
+
+`Sources/App/AppIntents/` (master prompt § 42–43) — four intents (Add Task,
+Remember, Check My Life, Ask Aeria) run in-process against
+`PersistenceController.shared`, a container reused by both the SwiftUI app
+and any intent invocation, so something created via Siri shows up in the app
+immediately. No separate Intents Extension target: these intents execute in
+the app's own process (launched in the background if needed), which is why
+sharing the container is enough — there's no second process to keep in sync.
+
+`AskAeriaIntent` only populates calendar context if `EKEventStore`
+authorization is already `.fullAccess` — otherwise it leaves calendar-derived
+fields empty rather than let the rule-based provider's "nothing on your
+calendar" phrasing imply "I checked" when it didn't (master prompt § 57).
+
+---
+
+## Proactive notifications
+
+`BackgroundRefreshScheduler` (master prompt § 29) registers a
+`BGAppRefreshTask` at app launch (`AeriaApp.init()`) and reschedules itself
+every time the app backgrounds. Each run re-runs `LooseEndsScanner` and, only
+if `InterruptionDecision.shouldNotify` clears the budget (max/day, minimum
+spacing since the last one), fires a single local notification. There's no
+path in the app that sends a notification without going through this
+decision — see `Notifications/InterruptionBudget.swift`.
+
+Background tasks essentially never fire on demand in the Simulator; test on
+a real device, or trigger it manually via LLDB while paused at a breakpoint
+after `BGTaskScheduler.shared.register(...)` has run:
+
+```
+e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"com.aeria.life.refresh"]
+```
+
+---
+
 ## Persistence & sync
 
 Local-only SwiftData (`cloudKitDatabase: .none`) — see
@@ -186,17 +276,11 @@ future settings toggle can offer light mode without touching Info.plist.
 
 ---
 
-## What's scaffolded but not built
+## What's not built
 
-Data models exist for `Goal`, `Habit`, `Moment`, `Asset` beyond basic
-warranty tracking — but there's no dedicated UI for Goals/Habits/Moments yet.
-Per master prompt § 82–84 these are V1.1/V2 features; building shallow UI for
-all of them now would have spread this pass thin instead of making the MVP
-slices (Today, Ask Aeria, Life Inbox, Loose Ends, Vault, Privacy Center,
-Search) solid. See [`ROADMAP.md`](ROADMAP.md).
-
-No Watch app, no widgets, no Shortcuts/App Intents, no Live Activities — all
-V1.1 (§ 82). The module boundaries above (`Context`, `Intelligence`, `Memory`
-as separate folders with no UIKit/SwiftUI imports) were kept clean
-specifically so a watchOS or widget extension target can import the same
-Swift files later without restructuring anything.
+Share Sheet extension and Live Activities (both § 82) aren't built. Predictions,
+the Decision Engine, the Life Simulator, shared/household permissions, and
+natural-language automations (all § 83) aren't built — `Routine` exists only
+as descriptive context an automation engine could read later, not something
+that executes anything yet. The Agent (§ 84) isn't built. See
+[`ROADMAP.md`](ROADMAP.md) for the full status table.

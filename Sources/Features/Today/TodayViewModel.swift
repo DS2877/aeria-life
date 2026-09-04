@@ -7,6 +7,9 @@ final class TodayViewModel: ObservableObject {
     @Published private(set) var weather: WeatherSnapshot?
     @Published private(set) var currentMode: LifeMode = .home
     @Published private(set) var isLoading = false
+    @Published private(set) var travelPlan: TravelPlan?
+
+    private let travelTimeProvider = TravelTimeProvider()
 
     func load(environment: AppEnvironment, knownPlaces: [Place]) async {
         isLoading = true
@@ -39,6 +42,23 @@ final class TodayViewModel: ObservableObject {
         } else {
             weather = nil
         }
+
+        travelPlan = await computeTravelPlan(now: now, environment: environment)
+    }
+
+    /// Only computed for a next event that (a) has a location string, (b)
+    /// starts within the next few hours — no point calculating "leave by"
+    /// for tomorrow — and (c) Aeria has a current location to route from.
+    private func computeTravelPlan(now: Date, environment: AppEnvironment) async -> TravelPlan? {
+        guard let location = environment.locationProvider.currentLocation else { return nil }
+        guard let next = todaysEvents.first(where: { $0.startDate > now && !$0.isAllDay }) else { return nil }
+        guard next.startDate.timeIntervalSince(now) < 4 * 3600 else { return nil }
+        return await travelTimeProvider.plan(
+            eventTitle: next.title,
+            eventStart: next.startDate,
+            destinationAddress: next.location,
+            from: location
+        )
     }
 
     var nextEvent: CalendarEvent? {

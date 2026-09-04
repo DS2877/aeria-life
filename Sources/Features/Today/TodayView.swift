@@ -87,6 +87,14 @@ struct TodayView: View {
     }
 
     private var aeriaObservation: (headline: String, detail: String?) {
+        // A "leave by" that's actually imminent takes precedence over
+        // everything else — master prompt § 29's own example ("Leave 10
+        // minutes earlier") is exactly this kind of time-sensitive nudge.
+        if let plan = viewModel.travelPlan, plan.leaveByDate.timeIntervalSince(.now) < 90 * 60 {
+            let time = plan.leaveByDate.formatted(date: .omitted, time: .shortened)
+            return ("Leave by \(time) to arrive at \(plan.eventTitle) comfortably.", "\(plan.travelMinutes) min drive.")
+        }
+
         let inputs: [PriorityInput] = looseEnds.map { end in
             PriorityInput(
                 id: end.id,
