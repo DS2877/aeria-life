@@ -24,9 +24,12 @@ final class AppEnvironment: ObservableObject {
         weatherProvider: WeatherContextProviding = UnavailableWeatherProvider(),
         intelligenceProvider: AeriaIntelligenceProviding = RuleBasedIntelligenceProvider()
     ) {
+        // TEMPORARY diagnostic — see AeriaApp.init()'s matching note.
+        print("AppEnvironment.init(): modelContainer ready, wiring providers")
         self.modelContainer = modelContainer
         self.weatherProvider = weatherProvider
         self.intelligenceProvider = intelligenceProvider
+        print("AppEnvironment.init(): done")
     }
 
     var mainContext: ModelContext { modelContainer.mainContext }

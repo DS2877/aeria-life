@@ -19,7 +19,20 @@ enum BackgroundRefreshScheduler {
     private static let notifiedTodayCountKey = "aeria.notifications.countForDay"
     private static let notifiedTodayDateKey = "aeria.notifications.countDate"
 
+    /// `BGTaskScheduler.register` crashes immediately — not a thrown Swift
+    /// error, an uncatchable one — if `taskIdentifier` isn't listed in
+    /// Info.plist's `BGTaskSchedulerPermittedIdentifiers`, and this runs as
+    /// the very first thing the app does (`AeriaApp.init()`). Checking the
+    /// identifier is actually declared before calling register turns a
+    /// possible instant launch crash into, at worst, background refresh
+    /// silently not working — never something that blocks the app opening.
     static func register() {
+        print("BackgroundRefreshScheduler.register(): checking Info.plist for '\(taskIdentifier)'…")
+        let permitted = Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as? [String] ?? []
+        guard permitted.contains(taskIdentifier) else {
+            print("BackgroundRefreshScheduler.register(): '\(taskIdentifier)' is NOT in BGTaskSchedulerPermittedIdentifiers (found \(permitted)) — skipping registration so this can't crash launch.")
+            return
+        }
         _ = BGTaskScheduler.shared.register(forTaskWithIdentifier: taskIdentifier, using: nil) { task in
             guard let refreshTask = task as? BGAppRefreshTask else {
                 task.setTaskCompleted(success: false)
@@ -27,6 +40,7 @@ enum BackgroundRefreshScheduler {
             }
             handle(refreshTask)
         }
+        print("BackgroundRefreshScheduler.register(): registered successfully.")
     }
 
     static func scheduleNext() {

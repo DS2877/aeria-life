@@ -53,14 +53,20 @@ enum PersistenceController {
 
     /// The real, on-disk container the app runs against.
     static func makeContainer() -> ModelContainer {
+        // TEMPORARY diagnostic logging while chasing a launch hang — safe
+        // to leave in, remove once launch is reliable.
+        print("PersistenceController.makeContainer(): building schema + configuration")
         let configuration = ModelConfiguration(
             "AeriaStore",
             schema: schema,
             isStoredInMemoryOnly: false,
             cloudKitDatabase: .none
         )
+        print("PersistenceController.makeContainer(): calling ModelContainer(for:configurations:) — on-disk store")
         do {
-            return try ModelContainer(for: schema, configurations: [configuration])
+            let container = try ModelContainer(for: schema, configurations: [configuration])
+            print("PersistenceController.makeContainer(): on-disk container ready")
+            return container
         } catch {
             // A corrupt store should never hard-crash Aeria on launch — that
             // would turn one bad write into total data loss from the user's
@@ -74,10 +80,20 @@ enum PersistenceController {
             // the "never hard-crash" behavior this comment promises NOT to
             // do. `print` is the correct choice: visible in the Xcode
             // console, doesn't stop execution.
-            print("PersistenceController: falling back to an in-memory store — on-disk store failed to load: \(error)")
+            print("PersistenceController.makeContainer(): on-disk store failed to load, falling back to in-memory: \(error)")
             let fallback = ModelConfiguration(isStoredInMemoryOnly: true)
-            // swiftlint:disable:next force_try
-            return try! ModelContainer(for: schema, configurations: [fallback])
+            do {
+                let container = try ModelContainer(for: schema, configurations: [fallback])
+                print("PersistenceController.makeContainer(): in-memory fallback container ready")
+                return container
+            } catch {
+                // If even a from-scratch in-memory container can't be built,
+                // the schema itself is broken (not a storage/IO problem) —
+                // that's not something to paper over, but it also shouldn't
+                // be a silent trap; this is the one place a real crash is
+                // appropriate, with a message that says why.
+                fatalError("PersistenceController.makeContainer(): even the in-memory fallback failed — the SwiftData schema itself is invalid: \(error)")
+            }
         }
     }
 
