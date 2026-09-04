@@ -4,6 +4,12 @@ import AppIntents
 /// master prompt § 43: "use Apple's platform capabilities," not a bespoke
 /// voice UI. `${applicationName}` resolves to the app's display name
 /// ("Aeria") automatically.
+///
+/// Free-text `@Parameter`s (question/taskTitle/content are all plain
+/// `String`) can't be embedded inside a phrase pattern — Apple only allows
+/// that for `AppEntity`/`AppEnum`-typed parameters, i.e. a fixed set of
+/// choices, not arbitrary typed text. Siri still prompts for the value
+/// conversationally; the phrase just can't show it inline.
 struct AeriaShortcutsProvider: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
@@ -18,7 +24,7 @@ struct AeriaShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: AskAeriaIntent(),
             phrases: [
-                "Ask \(.applicationName) \(\.$question)",
+                "Ask \(.applicationName) a question",
             ],
             shortTitle: "Ask Aeria",
             systemImageName: "sparkle"
@@ -26,7 +32,7 @@ struct AeriaShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: CreateTaskIntent(),
             phrases: [
-                "Add \(\.$taskTitle) to \(.applicationName)",
+                "Add a task to \(.applicationName)",
             ],
             shortTitle: "Add Task",
             systemImageName: "checkmark.circle.fill"
@@ -34,7 +40,7 @@ struct AeriaShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: AddMemoryIntent(),
             phrases: [
-                "Tell \(.applicationName) to remember \(\.$content)",
+                "Tell \(.applicationName) to remember something",
             ],
             shortTitle: "Remember",
             systemImageName: "brain"
